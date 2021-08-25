@@ -12,7 +12,9 @@ jobs:
           submodules: "true"
       - name: autoreconf
         working-directory: ./libdwarf-code
-        run: autoreconf --warnings=all --install --verbose --force
+        run: |
+          brew install automake
+          autoreconf --warnings=all --install --verbose --force
       - name: configure
         working-directory: ./libdwarf-code
         run: ./configure --disable-debug --enable-shared --disable-nonshared --disable-dependency-tracking --disable-silent-rules CFLAGS=-O2
