@@ -18,3 +18,19 @@ jobs:
       - name: configure
         working-directory: ./libdwarf-code
         run: ./configure --disable-debug --enable-shared --disable-nonshared --disable-dependency-tracking --disable-silent-rules CFLAGS=-O2
+      - name: make
+        working-directory: ./libdwarf-code
+        run: make
+      - name: copy file to root directory
+        run: |
+          export libname=$(find ./libdwarf-code -name libdwarf.dylib | head -n 1)
+          if [ -z $libname ]; then exit 1; fi
+          cp $libname ./libdwarf.dylib
+      - name: Release file
+        uses: djnicholson/release-action@v2.11
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          asset-name: "libdwarf.dylib"
+          file: "libdwarf.dylib"
+          tag-name: "latest"
+          release-name: "Latest libdwarf-darwin build"
