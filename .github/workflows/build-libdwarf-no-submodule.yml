@@ -1,0 +1,36 @@
+name: libdwarf CI
+on:
+  workflow_dispatch:
+
+jobs:
+  build-libdwarf-darwin:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: clone libdwarf
+        run: git clone https://git.code.sf.net/p/libdwarf/code libdwarf-code
+      - name: autoreconf
+        working-directory: ./libdwarf-code
+        run: |
+          brew install automake
+          autoreconf --warnings=all --install --verbose --force
+      - name: configure
+        working-directory: ./libdwarf-code
+        run: ./configure --disable-debug --enable-shared --disable-nonshared --disable-dependency-tracking --disable-silent-rules CFLAGS=-O2
+      - name: make
+        working-directory: ./libdwarf-code
+        run: make -j$(getconf _NPROCESSORS_ONLN)
+      - name: copy file to root directory
+        run: |
+          export libname=$(find ./libdwarf-code -name libdwarf.dylib | head -n 1)
+          if [ -z $libname ]; then exit 1; fi
+          cp $libname ./libdwarf.dylib
+      - name: release file
+        uses: djnicholson/release-action@v2.11
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          asset-name: "libdwarf.dylib"
+          file: "libdwarf.dylib"
+          tag-name: "libdwarf-darwin-x86-64"
+          release-name: "Latest libdwarf-darwin build for x86-64"
